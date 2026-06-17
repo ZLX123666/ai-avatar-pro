@@ -1,0 +1,703 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>AI Avatar Pro · 专属AI头像定制</title>
+<meta name="description" content="专业AI头像生成服务，8大风格，HD高清品质。个人社交头像、品牌IP、团队头像一站式定制。">
+<style>
+  :root {
+    --bg: #08080D;
+    --card-bg: #111118;
+    --text: #e0e0e0;
+    --accent: #FF2D55;
+    --accent2: #FF6B00;
+    --accent3: #B44CFF;
+    --border: rgba(255,255,255,0.06);
+  }
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  html { scroll-behavior: smooth; }
+  body {
+    font-family: 'Segoe UI', 'PingFang SC', 'Microsoft YaHei', sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    overflow-x: hidden;
+    line-height: 1.6;
+  }
+
+  /* === BG Blobs === */
+  .bg-blobs { position: fixed; inset: 0; pointer-events: none; z-index: 0; overflow: hidden; }
+  .blob {
+    position: absolute; border-radius: 50%; filter: blur(120px); opacity: 0.35;
+    animation: floatBlob 16s ease-in-out infinite;
+  }
+  .blob-1 { width: 600px; height: 600px; background: #FF2D55; top: -10%; left: -8%; animation-delay: 0s; }
+  .blob-2 { width: 500px; height: 500px; background: #FF6B00; top: 50%; right: -10%; animation-delay: -5s; }
+  .blob-3 { width: 450px; height: 450px; background: #B44CFF; bottom: -10%; left: 25%; animation-delay: -9s; }
+  @keyframes floatBlob {
+    0%, 100% { transform: translate(0, 0) scale(1); }
+    25% { transform: translate(70px, -40px) scale(1.1); }
+    50% { transform: translate(-40px, 30px) scale(0.9); }
+    75% { transform: translate(-60px, -20px) scale(1.05); }
+  }
+
+  /* === Navigation === */
+  nav {
+    position: fixed; top: 0; width: 100%; z-index: 100;
+    background: rgba(8,8,13,0.88); backdrop-filter: blur(20px);
+    border-bottom: 1px solid var(--border);
+    padding: 0 2rem; display: flex; align-items: center; justify-content: space-between;
+    height: 68px; transition: all 0.3s;
+  }
+  nav.scrolled { border-bottom-color: rgba(255,45,85,0.3); }
+  .nav-logo {
+    font-size: 1.4rem; font-weight: 900;
+    background: linear-gradient(135deg, #FF2D55, #FF6B00);
+    -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+    letter-spacing: -0.5px;
+  }
+  .nav-links { display: flex; gap: 2rem; list-style: none; align-items: center; }
+  .nav-links a { text-decoration: none; color: #aaa; font-weight: 600; font-size: 0.9rem; transition: color 0.3s; }
+  .nav-links a:hover { color: #fff; }
+  .nav-cta {
+    background: linear-gradient(135deg, #FF2D55, #FF6B00);
+    color: #fff !important; padding: 0.5rem 1.3rem; border-radius: 50px;
+    font-weight: 700 !important;
+  }
+  .nav-cta:hover { opacity: 0.9; }
+  .nav-toggle { display: none; flex-direction: column; gap: 5px; cursor: pointer; background: none; border: none; padding: 4px; }
+  .nav-toggle span { width: 26px; height: 3px; background: #FF2D55; border-radius: 3px; transition: 0.3s; }
+
+  /* === Sections === */
+  section { position: relative; z-index: 1; padding: 6rem 2rem; }
+  .container { max-width: 1100px; margin: 0 auto; }
+
+  /* === Hero === */
+  .hero {
+    min-height: 100vh; display: flex; align-items: center; justify-content: center;
+    text-align: center; padding: 7rem 2rem 5rem;
+  }
+  .hero-badge {
+    display: inline-flex; align-items: center; gap: 0.5rem;
+    padding: 0.45rem 1.3rem;
+    background: linear-gradient(135deg, rgba(255,45,85,0.2), rgba(255,107,0,0.2));
+    border: 1px solid rgba(255,45,85,0.3);
+    color: #FF2D55; border-radius: 50px; font-weight: 700; font-size: 0.85rem;
+    margin-bottom: 2rem; letter-spacing: 0.5px;
+  }
+  .hero-badge .live-dot { width: 8px; height: 8px; border-radius: 50%; background: #FF2D55; animation: pulse 1.5s infinite; }
+  @keyframes pulse { 0%,100%{opacity:1} 50%{opacity:.3} }
+  .hero h1 { font-size: clamp(2.5rem, 6vw, 4.5rem); font-weight: 900; line-height: 1.1; margin-bottom: 1.2rem; letter-spacing: -1.5px; }
+  .hero h1 .grad { background: linear-gradient(135deg, #FF2D55, #FF6B00, #FFD000); background-size: 200% 200%; -webkit-background-clip: text; -webkit-text-fill-color: transparent; animation: gradShift 4s ease infinite; }
+  @keyframes gradShift { 0%,100%{background-position:0% 50%} 50%{background-position:100% 50%} }
+  .hero-sub { font-size: 1.2rem; color: #888; margin-bottom: 2.5rem; max-width: 500px; margin-left: auto; margin-right: auto; }
+  .btn-group { display: flex; gap: 1rem; flex-wrap: wrap; justify-content: center; }
+  .btn {
+    display: inline-flex; align-items: center; gap: 0.5rem;
+    padding: 0.85rem 2rem; border-radius: 50px; font-weight: 700; font-size: 1rem;
+    text-decoration: none; cursor: pointer; transition: all 0.3s; border: none;
+  }
+  .btn-primary {
+    background: linear-gradient(135deg, #FF2D55, #FF6B00);
+    color: #fff; box-shadow: 0 8px 35px rgba(255,45,85,0.4);
+  }
+  .btn-primary:hover { transform: translateY(-3px); box-shadow: 0 14px 50px rgba(255,45,85,0.65); }
+  .btn-ghost { background: transparent; color: #fff; border: 2px solid rgba(255,255,255,0.2); }
+  .btn-ghost:hover { border-color: #FF2D55; background: rgba(255,45,85,0.1); }
+  .hero-avatars { display: flex; gap: 0.8rem; justify-content: center; margin-top: 3rem; flex-wrap: wrap; }
+  .hero-avatar {
+    width: 80px; height: 80px; border-radius: 24px;
+    border: 2px solid rgba(255,255,255,0.1);
+    background-size: cover; background-position: center;
+    transition: transform 0.3s, border-color 0.3s;
+  }
+  .hero-avatar:hover { transform: scale(1.1); border-color: #FF2D55; }
+
+  /* === Style Showcase === */
+  #styles { background: #0A0A14; text-align: center; }
+  .section-badge {
+    display: inline-block; padding: 0.35rem 1.1rem;
+    border: 1px solid rgba(255,45,85,0.4);
+    color: #FF2D55; border-radius: 50px; font-weight: 700; font-size: 0.8rem;
+    letter-spacing: 2px; text-transform: uppercase; margin-bottom: 1.2rem;
+  }
+  .section-title { font-size: clamp(2rem, 4vw, 3rem); font-weight: 900; margin-bottom: 1rem; letter-spacing: -1px; }
+  .section-sub { color: #888; max-width: 600px; margin: 0 auto 3rem; font-size: 1.05rem; }
+  .style-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+    gap: 20px;
+  }
+  .style-card {
+    background: var(--card-bg); border: 1px solid var(--border);
+    border-radius: 20px; overflow: hidden; transition: all 0.3s;
+    cursor: pointer; position: relative;
+  }
+  .style-card:hover { transform: translateY(-6px); border-color: var(--accent); box-shadow: 0 20px 50px rgba(255,45,85,0.15); }
+  .style-card .img-wrap {
+    width: 100%; aspect-ratio: 1;
+    background: #0a0a10; position: relative; overflow: hidden;
+  }
+  .style-card .img-wrap img { width: 100%; height: 100%; object-fit: cover; transition: opacity 0.5s; }
+  .style-card .img-wrap .loading-overlay {
+    position: absolute; inset: 0; display: flex; align-items: center; justify-content: center;
+    color: #666; font-size: 0.9em; background: rgba(0,0,0,0.5);
+  }
+  .style-card .info { padding: 14px 16px; text-align: left; }
+  .style-card .info h3 { font-size: 1em; font-weight: 700; margin-bottom: 4px; }
+  .style-card .tags { display: flex; gap: 6px; flex-wrap: wrap; }
+  .style-card .tag {
+    padding: 2px 10px; border-radius: 20px; font-size: 0.72em;
+    background: rgba(255,255,255,0.06); color: #999;
+  }
+  .pro-badge {
+    position: absolute; top: 12px; right: 12px;
+    background: linear-gradient(135deg, #FF2D55, #FF6B00);
+    color: #fff; padding: 4px 10px; border-radius: 20px;
+    font-size: 0.7em; font-weight: 800; letter-spacing: 1px;
+    z-index: 2;
+  }
+
+  /* === Try Free Demo === */
+  #demo { background: #0C0C18; text-align: center; }
+  .demo-box {
+    max-width: 600px; margin: 0 auto;
+    background: var(--card-bg); border: 1px solid var(--border);
+    border-radius: 24px; padding: 2.5rem;
+  }
+  .demo-box .demo-img {
+    width: 256px; height: 256px; border-radius: 20px; margin: 0 auto 1.5rem;
+    background: #0a0a10; display: flex; align-items: center; justify-content: center;
+    overflow: hidden; border: 1px solid var(--border);
+  }
+  .demo-box .demo-img img { width: 100%; height: 100%; object-fit: cover; }
+  .demo-select {
+    width: 100%; padding: 0.8rem 1rem; margin-bottom: 1rem;
+    background: #0a0a10; border: 1px solid var(--border); border-radius: 12px;
+    color: #fff; font-size: 1rem; cursor: pointer;
+  }
+  .demo-generate {
+    width: 100%; padding: 0.85rem;
+    background: linear-gradient(135deg, #FF2D55, #FF6B00);
+    color: #fff; border: none; border-radius: 12px; font-weight: 700;
+    font-size: 1rem; cursor: pointer; transition: opacity 0.3s;
+  }
+  .demo-generate:hover { opacity: 0.9; }
+  .demo-generate:disabled { opacity: 0.5; cursor: not-allowed; }
+  .demo-note { color: #666; font-size: 0.8em; margin-top: 1rem; }
+
+  /* === Pricing === */
+  #pricing { background: #0A0A14; text-align: center; }
+  .pricing-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 1.5rem; max-width: 1000px; margin: 0 auto; }
+  .price-card {
+    background: var(--card-bg); border: 1px solid var(--border);
+    border-radius: 24px; padding: 2.5rem 1.5rem; text-align: center;
+    transition: all 0.35s; position: relative;
+  }
+  .price-card:hover { transform: translateY(-6px); }
+  .price-card.popular {
+    border-color: rgba(255,45,85,0.5);
+    background: linear-gradient(180deg, rgba(255,45,85,0.08) 0%, rgba(255,107,0,0.04) 100%);
+  }
+  .price-card.popular::before {
+    content: '🔥 最受欢迎'; position: absolute; top: -14px; left: 50%; transform: translateX(-50%);
+    background: linear-gradient(135deg, #FF2D55, #FF6B00);
+    color: #fff; padding: 4px 16px; border-radius: 20px;
+    font-size: 0.78em; font-weight: 700; white-space: nowrap;
+  }
+  .price-icon { font-size: 3rem; margin-bottom: 1rem; }
+  .price-card h3 { font-size: 1.3rem; margin-bottom: 0.5rem; }
+  .price-card .price { font-size: 2.8rem; font-weight: 900; margin: 1rem 0; letter-spacing: -1px; }
+  .price-card .price .yen { font-size: 1.2rem; }
+  .price-card .price .orig { font-size: 1rem; color: #666; text-decoration: line-through; margin-left: 0.5rem; }
+  .price-card .features { list-style: none; text-align: left; margin: 1.5rem 0; }
+  .price-card .features li { padding: 0.5rem 0; color: #aaa; font-size: 0.9em; }
+  .price-card .features li::before { content: '✓ '; color: #FF2D55; font-weight: 700; }
+  .price-card .btn { width: 100%; justify-content: center; }
+
+  /* === Payment Modal === */
+  .modal-overlay {
+    position: fixed; inset: 0; background: rgba(0,0,0,0.8); z-index: 200;
+    display: flex; align-items: center; justify-content: center;
+    opacity: 0; pointer-events: none; transition: opacity 0.3s;
+  }
+  .modal-overlay.show { opacity: 1; pointer-events: auto; }
+  .modal {
+    background: var(--card-bg); border: 1px solid var(--border);
+    border-radius: 24px; padding: 2.5rem; max-width: 440px; width: 90%;
+    text-align: center; position: relative;
+  }
+  .modal-close {
+    position: absolute; top: 16px; right: 20px;
+    background: none; border: none; color: #666; font-size: 1.5rem;
+    cursor: pointer; transition: color 0.3s;
+  }
+  .modal-close:hover { color: #fff; }
+  .modal h3 { font-size: 1.4rem; margin-bottom: 0.5rem; }
+  .modal .amount { font-size: 2.5rem; font-weight: 900; color: #FF2D55; margin: 0.5rem 0; }
+  .modal .qr-section { margin: 1.5rem 0; }
+  .modal .qr-placeholder {
+    width: 200px; height: 200px; margin: 0 auto 1rem;
+    background: #fff; border-radius: 16px; display: flex;
+    align-items: center; justify-content: center;
+    color: #333; font-size: 0.85em;
+  }
+  .modal .qr-placeholder img { width: 100%; height: 100%; object-fit: contain; border-radius: 16px; }
+  .modal .qr-tabs { display: flex; gap: 0.5rem; justify-content: center; margin-bottom: 1rem; }
+  .modal .qr-tab {
+    padding: 0.5rem 1.2rem; border-radius: 20px; border: 1px solid var(--border);
+    background: transparent; color: #aaa; cursor: pointer; font-size: 0.85em;
+    transition: all 0.3s;
+  }
+  .modal .qr-tab.active { background: #fff; color: #333; border-color: #fff; font-weight: 700; }
+  .modal .pay-note { color: #666; font-size: 0.8em; margin-top: 0.5rem; }
+
+  /* === Order Form === */
+  #order { background: #0C0C18; text-align: center; }
+  .order-form {
+    max-width: 500px; margin: 0 auto; text-align: left;
+    background: var(--card-bg); border: 1px solid var(--border);
+    border-radius: 24px; padding: 2.5rem;
+  }
+  .form-group { margin-bottom: 1.2rem; }
+  .form-group label {
+    display: block; margin-bottom: 0.4rem; font-weight: 600; font-size: 0.9em;
+  }
+  .form-group input, .form-group select, .form-group textarea {
+    width: 100%; padding: 0.75rem 1rem;
+    background: #0a0a10; border: 1px solid var(--border); border-radius: 12px;
+    color: #fff; font-size: 0.95rem; font-family: inherit;
+  }
+  .form-group textarea { height: 80px; resize: vertical; }
+  .form-group input:focus, .form-group select:focus, .form-group textarea:focus {
+    outline: none; border-color: #FF2D55;
+  }
+  .submit-btn {
+    width: 100%; padding: 0.9rem;
+    background: linear-gradient(135deg, #FF2D55, #FF6B00);
+    color: #fff; border: none; border-radius: 12px;
+    font-weight: 700; font-size: 1.05rem; cursor: pointer; transition: all 0.3s;
+  }
+  .submit-btn:hover { opacity: 0.9; transform: translateY(-2px); }
+  .submit-btn:disabled { opacity: 0.5; cursor: not-allowed; }
+
+  /* === Order Success === */
+  .success-msg {
+    display: none; text-align: center; padding: 2rem;
+    background: var(--card-bg); border: 1px solid rgba(255,45,85,0.3);
+    border-radius: 24px; max-width: 500px; margin: 0 auto;
+  }
+  .success-msg.show { display: block; }
+  .success-msg .check { font-size: 4rem; margin-bottom: 1rem; }
+  .success-msg h3 { font-size: 1.5rem; margin-bottom: 0.5rem; }
+  .success-msg p { color: #888; }
+
+  /* === Footer === */
+  footer { text-align: center; padding: 3rem 2rem; position: relative; z-index: 1; color: #555; font-size: 0.85em; border-top: 1px solid var(--border); }
+
+  /* === Toast === */
+  .toast {
+    position: fixed; bottom: 24px; left: 50%; transform: translateX(-50%);
+    background: #333; color: #fff; padding: 10px 24px; border-radius: 8px;
+    font-size: 0.9em; z-index: 999; pointer-events: none; opacity: 0;
+    transition: opacity 0.3s;
+  }
+  .toast.show { opacity: 1; }
+
+  /* === Responsive === */
+  @media (max-width: 768px) {
+    .nav-links { display: none; position: absolute; top: 68px; left: 0; right: 0; background: rgba(8,8,13,0.98); backdrop-filter: blur(20px); flex-direction: column; padding: 1.5rem 2rem; gap: 1.2rem; border-bottom: 1px solid rgba(255,45,85,0.2); }
+    .nav-links.active { display: flex; }
+    .nav-toggle { display: flex; }
+    .pricing-grid { grid-template-columns: 1fr; max-width: 380px; }
+    .style-grid { grid-template-columns: repeat(2, 1fr); gap: 12px; }
+    section { padding: 4rem 1rem; }
+  }
+</style>
+</head>
+<body>
+
+<div class="bg-blobs">
+  <div class="blob blob-1"></div>
+  <div class="blob blob-2"></div>
+  <div class="blob blob-3"></div>
+</div>
+
+<!-- Nav -->
+<nav id="navbar">
+  <div class="nav-logo">AI Avatar Pro</div>
+  <ul class="nav-links" id="navLinks">
+    <li><a href="#styles">风格展示</a></li>
+    <li><a href="#demo">免费试用</a></li>
+    <li><a href="#pricing">定价</a></li>
+    <li><a href="#order" class="nav-cta">立即下单</a></li>
+  </ul>
+  <button class="nav-toggle" id="navToggle" aria-label="菜单">
+    <span></span><span></span><span></span>
+  </button>
+</nav>
+
+<!-- Hero -->
+<section class="hero" id="home">
+  <div class="container">
+    <div class="hero-badge"><span class="live-dot"></span> 已有 2,380+ 用户生成专属头像</div>
+    <h1>让你的<span class="grad">社交头像</span><br>与众不同的高级感</h1>
+    <p class="hero-sub">8大潮流风格 · AI 精准生成 · HD 高清品质 · 专属定制</p>
+    <div class="btn-group">
+      <a href="#pricing" class="btn btn-primary">🔥 立即定制 · ￥9.9起</a>
+      <a href="#demo" class="btn btn-ghost">🎨 免费试用</a>
+    </div>
+    <div class="hero-avatars">
+      <div class="hero-avatar" style="background:linear-gradient(135deg,#FF2D55,#FF6B00);" title="赛博朋克"></div>
+      <div class="hero-avatar" style="background:linear-gradient(135deg,#B44CFF,#FF2D55);" title="新中式"></div>
+      <div class="hero-avatar" style="background:linear-gradient(135deg,#00F5FF,#B44CFF);" title="粘土风"></div>
+      <div class="hero-avatar" style="background:linear-gradient(135deg,#FFD000,#FF6B00);" title="多巴胺"></div>
+      <div class="hero-avatar" style="background:linear-gradient(135deg,#FF2D55,#B44CFF);" title="暗黑机能"></div>
+    </div>
+  </div>
+</section>
+
+<!-- Style Showcase -->
+<section id="styles">
+  <div class="container">
+    <div class="section-badge">STYLES</div>
+    <h2 class="section-title">8 大潮流风格</h2>
+    <p class="section-sub">每种风格均由精选提示词驱动，AI 精准生成，效果惊艳</p>
+    <div class="style-grid" id="styleGrid"></div>
+  </div>
+</section>
+
+<!-- Free Demo -->
+<section id="demo">
+  <div class="container">
+    <div class="section-badge">TRY FREE</div>
+    <h2 class="section-title">免费试用</h2>
+    <p class="section-sub">选择风格，实时生成预览。满意再下单，零风险。</p>
+    <div class="demo-box">
+      <div class="demo-img"><img id="demoImg" src="" alt="AI 生成预览" style="display:none;"><span id="demoPlaceholder" style="color:#444;">点击下方按钮生成预览</span></div>
+      <select class="demo-select" id="demoStyle">
+        <option value="">选择风格...</option>
+      </select>
+      <button class="demo-generate" id="demoBtn" onclick="generateDemo()">✨ 生成预览</button>
+      <p class="demo-note">免费预览为低分辨率版本 · 付费后获得 HD 高清原图</p>
+    </div>
+  </div>
+</section>
+
+<!-- Pricing -->
+<section id="pricing">
+  <div class="container">
+    <div class="section-badge">PRICING</div>
+    <h2 class="section-title">选择你的套餐</h2>
+    <p class="section-sub">一次购买，永久使用。所有套餐均包含商用授权。</p>
+    <div class="pricing-grid">
+      <!-- Basic -->
+      <div class="price-card">
+        <div class="price-icon">🎨</div>
+        <h3>基础版</h3>
+        <p style="color:#888;font-size:0.9em;">适合个人社交头像</p>
+        <div class="price"><span class="yen">￥</span>9<span class="orig">￥29</span></div>
+        <ul class="features">
+          <li>任选 1 种风格</li>
+          <li>1 张 HD 高清头像</li>
+          <li>512×512 分辨率</li>
+          <li>Email 交付</li>
+          <li>商用授权</li>
+        </ul>
+        <button class="btn btn-primary" onclick="openPayment('basic', 9)">立即购买</button>
+      </div>
+      <!-- Pro -->
+      <div class="price-card popular">
+        <div class="price-icon">⭐</div>
+        <h3>专业版</h3>
+        <p style="color:#888;font-size:0.9em;">适合多平台统一形象</p>
+        <div class="price"><span class="yen">￥</span>29<span class="orig">￥79</span></div>
+        <ul class="features">
+          <li>任选 3 种风格</li>
+          <li>每种风格 1 张 HD 头像</li>
+          <li>1024×1024 高分辨率</li>
+          <li>加送 1 次免费修改</li>
+          <li>优先交付 · 24h 内</li>
+          <li>商用授权</li>
+        </ul>
+        <button class="btn btn-primary" onclick="openPayment('pro', 29)">立即购买</button>
+      </div>
+      <!-- Ultimate -->
+      <div class="price-card">
+        <div class="price-icon">👑</div>
+        <h3>尊享版</h3>
+        <p style="color:#888;font-size:0.9em;">适合品牌/团队/IP</p>
+        <div class="price"><span class="yen">￥</span>99<span class="orig">￥299</span></div>
+        <ul class="features">
+          <li>全部 8 种风格</li>
+          <li>每种 2 张 HD+ 头像</li>
+          <li>2048×2048 超高清</li>
+          <li>自定义风格描述</li>
+          <li>无限次修改</li>
+          <li>源文件 + 商用授权</li>
+        </ul>
+        <button class="btn btn-primary" onclick="openPayment('ultimate', 99)">立即购买</button>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- Order Form -->
+<section id="order">
+  <div class="container">
+    <div class="section-badge">ORDER</div>
+    <h2 class="section-title">完成下单</h2>
+    <p class="section-sub">付款后填写以下信息，我们将在 24 小时内交付</p>
+
+    <div class="success-msg" id="successMsg">
+      <div class="check">✅</div>
+      <h3>订单提交成功！</h3>
+      <p>我们将在 24 小时内将头像发送到你的邮箱。<br>如有问题，请联系客服微信。</p>
+    </div>
+
+    <form class="order-form" id="orderForm" onsubmit="submitOrder(event)">
+      <div class="form-group">
+        <label>选择套餐 *</label>
+        <select id="orderPlan" required>
+          <option value="">请选择套餐...</option>
+          <option value="basic">基础版 ￥9 - 1风格·1张HD头像</option>
+          <option value="pro">专业版 ￥29 - 3风格·1024分辨率·1次修改</option>
+          <option value="ultimate">尊享版 ￥99 - 全8风格·2K分辨率·无限修改</option>
+        </select>
+      </div>
+      <div class="form-group">
+        <label>选择风格 *</label>
+        <select id="orderStyle" required>
+          <option value="">请选择...</option>
+        </select>
+      </div>
+      <div class="form-group">
+        <label>你的邮箱 *</label>
+        <input type="email" id="orderEmail" placeholder="头像将发送到此邮箱" required>
+      </div>
+      <div class="form-group">
+        <label>特殊要求（可选）</label>
+        <textarea id="orderNote" placeholder="例如：发色、配饰、背景颜色等..."></textarea>
+      </div>
+      <button type="submit" class="submit-btn">💳 提交订单</button>
+      <p style="text-align:center;color:#666;font-size:0.78em;margin-top:0.8rem;">
+        提交后请按提示完成支付 · 付款截图将一并提交
+      </p>
+    </form>
+  </div>
+</section>
+
+<!-- Payment Modal -->
+<div class="modal-overlay" id="paymentModal">
+  <div class="modal">
+    <button class="modal-close" onclick="closePayment()">✕</button>
+    <h3>扫码支付</h3>
+    <div class="amount" id="modalAmount">￥9</div>
+    <p style="color:#888;font-size:0.9em;" id="modalPlanName">基础版</p>
+    <div class="qr-section">
+      <div class="qr-tabs">
+        <button class="qr-tab active" onclick="switchQR('wechat', this)">💚 微信支付</button>
+        <button class="qr-tab" onclick="switchQR('alipay', this)">💙 支付宝</button>
+      </div>
+      <div class="qr-placeholder" id="qrDisplay">
+        <img src="qr-wechat.png" alt="微信收款码">
+      </div>
+    </div>
+    <p class="pay-note">💰 支付完成后，请截图保存<br>并在订单表单中上传截图</p>
+    <button class="btn btn-primary" style="width:100%;margin-top:1rem;" onclick="closePayment()">
+      已完成支付，去填订单 →
+    </button>
+  </div>
+</div>
+
+<footer>
+  <p>© 2026 AI Avatar Pro · 专业AI头像定制服务 · 100% 满意保证</p>
+</footer>
+
+<div class="toast" id="toast"></div>
+
+<script>
+'use strict';
+
+// ======= DATA =======
+var STYLES = [
+  { id:'clay', name:'3D 粘土可爱风', tags:['小红书爆款','C4D','治愈'],
+    prompt:'A cute 3D clay-style avatar of a young person, C4D render, soft lighting, pastel colors, clean background, Pixar-inspired cute character design, isometric view, smooth matte texture, adorable expression, trendy youth aesthetic, high quality 3D art' },
+  { id:'cyberpunk', name:'赛博朋克 Y2K', tags:['机能','未来感','潮酷'],
+    prompt:'A cyberpunk y2k style avatar portrait, neon purple and cyan lighting, futuristic fashion, chrome accessories, glitch effects, retro-futuristic aesthetic, dark moody background, techwear outfit, holographic elements, high contrast, stylish youth culture, 4k quality' },
+  { id:'lineart', name:'极简线条风', tags:['ins风','高级感','性冷淡'],
+    prompt:'A minimalist line art avatar portrait, single continuous line drawing style, black lines on beige background, elegant simple face profile, aesthetic abstract art, Matisse-inspired, Scandinavian design, clean and modern, perfect for social media profile picture' },
+  { id:'dopamine', name:'多巴胺糖果色', tags:['少女心','元气','多巴胺'],
+    prompt:'A vibrant dopamine-style colorful avatar, candy colors, bright pink orange blue tones, playful happy expression, trendy k-pop inspired fashion, rainbow lighting, energetic youth vibe, confetti bokeh background, kawaii aesthetic, high saturation, joycore style' },
+  { id:'dark', name:'暗黑机能风', tags:['暗黑','机能','高级'],
+    prompt:'A dark techwear style avatar portrait, black and white, street fashion, oversized hoodie, tactical vest, urban gothic aesthetic, moody shadows, sharp contrast lighting, cool stoic expression, industrial background, high fashion streetwear, monochrome palette with silver accents' },
+  { id:'guochao', name:'新中式国潮', tags:['国风','新中式','东方美学'],
+    prompt:'A modern Chinese-style avatar portrait, traditional hanfu elements mixed with street fashion, ink wash painting aesthetic meets pop art, elegant oriental beauty, peony and cloud motifs, red and gold accents on dark background, guochao trend, artistic portrait, digital illustration style' },
+  { id:'pixel', name:'像素游戏风', tags:['复古','像素','游戏'],
+    prompt:'A pixel art style avatar portrait, 16-bit retro game character aesthetic, limited color palette, chunky pixels, cute RPG character design, Stardew Valley inspired, nostalgic 90s video game vibe, clear facial features in pixel form, vibrant but retro colors, square composition' },
+  { id:'film', name:'复古胶片感', tags:['胶片','氛围感','情绪'],
+    prompt:'A retro film camera aesthetic portrait, 35mm film grain texture, soft warm tones, vintage 90s fashion, dreamy light leaks, nostalgic mood, polaroid-style portrait, casual street snap vibe, sepia and warm amber tones, analog photography look, artistic blur, emotional atmospheric portrait' }
+];
+
+// ======= TOAST =======
+var toastEl = document.getElementById('toast');
+var toastTimer;
+function toast(msg) {
+  if (toastTimer) clearTimeout(toastTimer);
+  toastEl.textContent = msg;
+  toastEl.classList.add('show');
+  toastTimer = setTimeout(function(){ toastEl.classList.remove('show'); }, 2500);
+}
+
+// ======= BUILD STYLE GRID =======
+var grid = document.getElementById('grid');
+STYLES.forEach(function(s) {
+  var card = document.createElement('div');
+  card.className = 'style-card';
+  card.innerHTML =
+    '<div class="img-wrap">' +
+      '<div class="loading-overlay">生成中...</div>' +
+      '<img src="" alt="'+s.name+'" style="opacity:0.3" onload="this.style.opacity=1;this.parentElement.querySelector(\'.loading-overlay\').style.display=\'none\'" onerror="this.parentElement.querySelector(\'.loading-overlay\').textContent=\'点击重试\'">' +
+      '<span class="pro-badge">PRO</span>' +
+    '</div>' +
+    '<div class="info">' +
+      '<h3>'+s.name+'</h3>' +
+      '<div class="tags">'+s.tags.map(function(t){return '<span class="tag">#'+t+'</span>';}).join('')+'</div>' +
+    '</div>';
+  grid.appendChild(card);
+
+  // Load image
+  var img = card.querySelector('img');
+  var seed = Math.floor(Math.random()*1000000);
+  img.src = 'https://image.pollinations.ai/prompt/'+encodeURIComponent(s.prompt)+'?width=512&height=512&seed='+seed+'&nologo=true';
+});
+
+// ======= POPULATE SELECTS =======
+var selects = [document.getElementById('demoStyle'), document.getElementById('orderStyle')];
+selects.forEach(function(sel) {
+  if (!sel) return;
+  STYLES.forEach(function(s) {
+    var opt = document.createElement('option');
+    opt.value = s.id;
+    opt.textContent = s.name;
+    sel.appendChild(opt);
+  });
+});
+
+// ======= DEMO GENERATION =======
+function generateDemo() {
+  var styleId = document.getElementById('demoStyle').value;
+  if (!styleId) { toast('请先选择一种风格'); return; }
+  var style = STYLES.filter(function(s){return s.id===styleId;})[0];
+  var btn = document.getElementById('demoBtn');
+  btn.disabled = true;
+  btn.textContent = '生成中...';
+
+  var img = document.getElementById('demoImg');
+  var placeholder = document.getElementById('demoPlaceholder');
+  var seed = Math.floor(Math.random()*1000000);
+  var url = 'https://image.pollinations.ai/prompt/'+encodeURIComponent(style.prompt)+'?width=256&height=256&seed='+seed+'&nologo=true';
+
+  var test = new Image();
+  test.onload = function() {
+    img.src = url;
+    img.style.display = 'block';
+    placeholder.style.display = 'none';
+    btn.disabled = false;
+    btn.textContent = '✨ 重新生成';
+  };
+  test.onerror = function() {
+    toast('生成失败，请重试');
+    btn.disabled = false;
+    btn.textContent = '✨ 生成预览';
+  };
+  setTimeout(function() {
+    if (btn.disabled) { btn.disabled = false; btn.textContent = '✨ 生成预览'; toast('加载超时，请重试'); }
+  }, 25000);
+  test.src = url;
+}
+
+// ======= PAYMENT MODAL =======
+var currentPayment = { plan: '', amount: 0 };
+
+function openPayment(plan, amount) {
+  currentPayment = { plan: plan, amount: amount };
+  document.getElementById('modalAmount').textContent = '￥'+amount;
+  var names = { basic:'基础版', pro:'专业版', ultimate:'尊享版' };
+  document.getElementById('modalPlanName').textContent = names[plan] || '';
+  document.getElementById('paymentModal').classList.add('show');
+  // 同步到订单表单
+  document.getElementById('orderPlan').value = plan;
+  document.getElementById('order').scrollIntoView({ behavior:'smooth' });
+}
+
+function closePayment() {
+  document.getElementById('paymentModal').classList.remove('show');
+  document.getElementById('order').scrollIntoView({ behavior:'smooth' });
+}
+
+function switchQR(type, btn) {
+  document.querySelectorAll('.qr-tab').forEach(function(t){ t.classList.remove('active'); });
+  btn.classList.add('active');
+  var display = document.getElementById('qrDisplay');
+  if (type === 'wechat') {
+    display.innerHTML = '<img src="qr-wechat.png" alt="微信收款码">';
+  } else {
+    display.innerHTML = '<div style="text-align:center;padding:20px;"><p style="font-size:1.5em;">暂无支付宝</p><p style="color:#888;font-size:0.85em;">请使用微信支付<br>或联系客服获取支付宝收款码</p></div>';
+  }
+}
+
+// ======= ORDER SUBMISSION =======
+function submitOrder(e) {
+  e.preventDefault();
+  var plan = document.getElementById('orderPlan').value;
+  var style = document.getElementById('orderStyle').value;
+  var email = document.getElementById('orderEmail').value;
+  var note = document.getElementById('orderNote').value;
+
+  if (!plan || !style || !email) { toast('请填写所有必填项'); return; }
+
+  var plans = { basic:{name:'基础版',price:9}, pro:{name:'专业版',price:29}, ultimate:{name:'尊享版',price:99} };
+  var styleNames = {};
+  STYLES.forEach(function(s){ styleNames[s.id]=s.name; });
+
+  var order = {
+    id: 'AVT'+Date.now().toString(36).toUpperCase(),
+    plan: plans[plan],
+    style: styleNames[style],
+    email: email,
+    note: note,
+    time: new Date().toISOString()
+  };
+
+  // Save to localStorage
+  var orders = JSON.parse(localStorage.getItem('aiAvatarOrders') || '[]');
+  orders.push(order);
+  localStorage.setItem('aiAvatarOrders', JSON.stringify(orders));
+
+  // Show success
+  document.getElementById('orderForm').style.display = 'none';
+  document.getElementById('successMsg').classList.add('show');
+  document.getElementById('successMsg').scrollIntoView({ behavior:'smooth' });
+
+  console.log('新订单:', order);
+}
+
+// ======= NAV =======
+var navbar = document.getElementById('navbar');
+window.addEventListener('scroll', function(){ navbar.classList.toggle('scrolled', window.scrollY > 50); });
+
+var navToggle = document.getElementById('navToggle');
+var navLinks = document.getElementById('navLinks');
+navToggle.addEventListener('click', function(){ navLinks.classList.toggle('active'); });
+navLinks.querySelectorAll('a').forEach(function(a){
+  a.addEventListener('click', function(){ navLinks.classList.remove('active'); });
+});
+
+// Close modal on overlay click
+document.getElementById('paymentModal').addEventListener('click', function(e){
+  if (e.target === this) closePayment();
+});
+</script>
+</body>
+</html>
