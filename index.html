@@ -581,15 +581,25 @@ function toast(msg) {
   toastTimer = setTimeout(function(){ toastEl.classList.remove('show'); }, 2500);
 }
 
-// ======= BUILD STYLE GRID =======
+// ======= BUILD STYLE GRID (instant load with gradient placeholders) =======
 var grid = document.getElementById('grid');
+var avatarGradients = {
+  clay:'linear-gradient(135deg,#f8c8d4,#f5e6cc,#e8d4f0,#c8e8f0)',
+  cyberpunk:'linear-gradient(135deg,#1a0030,#0a0040,#1a0030,#0a0020)',
+  lineart:'linear-gradient(135deg,#f5f0e8,#e8e0d4,#f0ebe0,#ddd8cc)',
+  dopamine:'linear-gradient(135deg,#ff6b9d,#ff8a47,#ffd93d,#6bc5ff)',
+  dark:'linear-gradient(135deg,#0a0a0a,#1a1a1a,#0d0d0d,#151515)',
+  guochao:'linear-gradient(135deg,#8b0000,#1a0000,#4a0000,#2a0000)',
+  pixel:'linear-gradient(135deg,#2d5a27,#1a3a1a,#3a6b2a,#4a8a3a)',
+  film:'linear-gradient(135deg,#3a2a1a,#2a1a0a,#4a3a2a,#3a2a0a)'
+};
 STYLES.forEach(function(s) {
   var card = document.createElement('div');
   card.className = 'style-card';
+  var bg = avatarGradients[s.id] || 'linear-gradient(135deg,#111,#222)';
   card.innerHTML =
-    '<div class="img-wrap">' +
-      '<div class="loading-overlay">生成中...</div>' +
-      '<img src="" alt="'+s.name+'" style="opacity:0.3" onload="this.style.opacity=1;this.parentElement.querySelector(\'.loading-overlay\').style.display=\'none\'" onerror="this.parentElement.querySelector(\'.loading-overlay\').textContent=\'点击重试\'">' +
+    '<div class="img-wrap" style="background:'+bg+';display:flex;align-items:center;justify-content:center">' +
+      '<span style="font-size:4rem;opacity:0.6">'+s.name.charAt(0)+'</span>' +
       '<span class="pro-badge">PRO</span>' +
     '</div>' +
     '<div class="info">' +
@@ -597,11 +607,6 @@ STYLES.forEach(function(s) {
       '<div class="tags">'+s.tags.map(function(t){return '<span class="tag">#'+t+'</span>';}).join('')+'</div>' +
     '</div>';
   grid.appendChild(card);
-
-  // Load image
-  var img = card.querySelector('img');
-  var seed = Math.floor(Math.random()*1000000);
-  img.src = 'https://image.pollinations.ai/prompt/'+encodeURIComponent(s.prompt)+'?width=512&height=512&seed='+seed+'&nologo=true';
 });
 
 // ======= POPULATE SELECTS =======
@@ -645,7 +650,7 @@ function generateDemo() {
   };
   setTimeout(function() {
     if (btn.disabled) { btn.disabled = false; btn.textContent = '✨ 生成预览'; toast('加载超时，请重试'); }
-  }, 25000);
+  }, 60000);
   test.src = url;
 }
 
