@@ -633,7 +633,7 @@ function generateDemo() {
   var img = document.getElementById('demoImg');
   var placeholder = document.getElementById('demoPlaceholder');
   var seed = Math.floor(Math.random()*1000000);
-  var url = 'https://image.pollinations.ai/prompt/'+encodeURIComponent(style.prompt)+'?width=256&height=256&seed='+seed+'&nologo=true';
+  var url = 'https://image.pollinations.ai/prompt/'+encodeURIComponent(style.prompt)+'?width=256&height=256&seed='+seed+'&nologo=truemodel=turbo&nologo=truenologo=true';
 
   var test = new Image();
   test.onload = function() {
